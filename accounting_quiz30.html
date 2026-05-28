@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会計情報論 語句選択確認クイズ（全30問）</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.05em;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: block;
+            padding: 12px 15px;
+            background-color: #f1f3f5;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #e9ecef;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+        }
+
+        .result-panel {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .score-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+            font-size: 0.95em;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .rationale-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .submit-btn-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .submit-btn:hover {
+            background-color: #1a252f;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .correct-choice {
+            border: 2px solid var(--success-color) !important;
+            background-color: #e8f5e9 !important;
+        }
+
+        .incorrect-choice {
+            border: 2px solid var(--error-color) !important;
+            background-color: #ffebee !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>会計情報論 語句選択確認クイズ（全30問）</h1>
+
+    <div id="resultPanel" class="result-panel">
+        <div class="score-text" id="scoreDisplay"></div>
+        <div id="commentDisplay" style="margin-top: 10px;"></div>
+    </div>
+
+    <form id="quizForm">
+        <div id="quizContainer"></div>
+
+        <div class="submit-btn-container">
+            <button type="button" id="submitBtn" class="submit-btn" onclick="checkAnswers()">結果を確認する</button>
+        </div>
+    </form>
+</div>
+
+<script>
+const quizData = [
+    {
+        q: "株式会社の経済活動を記録し、その結果を報告するシステムを何というか。",
+        options: ["会計", "監査", "経営分析", "家計簿"],
+        answer: 0,
+        rationale: "資料に「会計とは、株式会社の経済活動を記録し、その結果を報告するシステムである」と明記されています。"
+    },
+    {
+        q: "株式会社の経済活動を記録する際に用いられる、可視化のための技術を何というか。",
+        options: ["単式簿記", "複式簿記", "システム監査", "ファンダメンタルズ分析"],
+        answer: 1,
+        rationale: "資料において「複式簿記の技術を用い、株式会社の経済活動を記録する」と説明されています。"
+    },
+    {
+        q: "複式簿記の技術を用いて記録した結果を、一覧表にした報告書類の総称を何というか。",
+        options: ["財務諸表", "定時株主総会招集通知", "決算短信", "総勘定元帳"],
+        answer: 0,
+        rationale: "「記録した結果を一覧表にした財務諸表を作成する」と定義されており、貸借対照表や損益計算書がこれに含まれます。"
+    },
+    {
+        q: "財務諸表のうち、企業の特定の期末における「財政状態」を表す書類を何というか。",
+        options: ["損益計算書（P/L）", "貸借対照表（B/S）", "キャッシュ・フロー計算書（C/F）", "有価証券報告書"],
+        answer: 1,
+        rationale: "「貸借対照表（B/S: balance sheet）: 財政状態を表す書類」と資料に示されています。"
+    },
+    {
+        q: "財務諸表のうち、企業の特定の会計期間における「経営成績」を表す書類を何というか。",
+        options: ["貸借対照表（B/S）", "キャッシュ・フロー計算書（C/F）", "損益計算書（P/L）", "個別財務諸表"],
+        answer: 2,
+        rationale: "「損益計算書（P/L: profit and loss statement）: 経営成績を表す書類」と定義されています。"
+    },
+    {
+        q: "国、地方公共団体、独立行政法人など、公共サービスを提供する公的組織の経済活動を対象とする会計領域を何というか。",
+        options: ["企業会計", "公会計", "税務会計", "管理会計"],
+        answer: 1,
+        rationale: "資料において、国や地方公共団体などの「公的組織の経済活動：公会計」と分類されています。"
+    },
+    {
+        q: "投資プロジェクトに関して経営者が意思決定をしたり、生産・販売活動の業績を評価・コントロールしたりするために、企業内部へ情報提供を行う会計領域を何というか。",
+        options: ["財務会計", "公会計", "管理会計", "制度会計"],
+        answer: 2,
+        rationale: "資料において「経営管理に役立つ資料を企業内部の経営者に提供する: 管理会計」と定義されています。"
+    },
+    {
+        q: "貸借対照表（B/S）において、右側に位置する「貸方」は、会計上どのような情報を表しているか。",
+        options: ["資金の運用形態", "資金の調達源泉", "当期の経営成績", "キャッシュの増減額"],
+        answer: 1,
+        rationale: "資料において「貸方:資金の調達源泉」と明記されており、負債や純資産がこれに該当します。"
+    },
+    {
+        q: "貸借対照表（B/S）において、左側に位置する「借方」は、会計上どのような情報を表しているか。",
+        options: ["資金の運用形態", "資金の調達源泉", "将来の業績予想", "分配可能額の総額"],
+        answer: 0,
+        rationale: "資料において「借方:資金の運用形態」と説明されており、現金や設備などの資産が該当します。"
+    },
+    {
+        q: "親会社、子会社、関連会社など、資本関係のある複数の会社からなる「企業集団」を一つの単位として作成される財務諸表を何というか。",
+        options: ["個別財務諸表", "連結財務諸表", "公会計諸表", "決算短信"],
+        answer: 1,
+        rationale: "資料において「企業集団: 親会社・子会社・関連会社」を対象として作成されるものとして「連結財務諸表」が挙げられています。"
+    },
+    {
+        q: "企業の主要な情報源のうち、金融商品取引法に基づきEDINET等で開示され、「情報の網羅性」や「非財務情報の開示」を大きな特徴とする資料はどれか。",
+        options: ["定時株主総会招集通知", "決算短信", "有価証券報告書", "アナリスト・レポート"],
+        answer: 2,
+        rationale: "資料において「有価証券報告書の特徴①:情報の網羅性、特徴②:非財務情報の開示」と明確に整理されています。"
+    },
+    {
+        q: "金融商品取引法に基づく有価証券報告書や四半期報告書などの開示書類を、オンラインで検索・閲覧できる金融庁が運営するシステムを何というか。",
+        options: ["TDnet", "EDINET", "Moodle", "会社標本調査"],
+        answer: 1,
+        rationale: "資料において「有価証券報告書...入手先：企業HP or EDINET」として指定されている電子開示システムです。"
+    },
+    {
+        q: "金融商品取引所の規則に定める「適時開示制度」に基づき、上場企業の決算短信などを広く、タイムリーに投資者へ伝達するためのシステムを何というか。",
+        options: ["EDINET", "TDnet", "Yahoo!ファイナンス", "Rapsodo"],
+        answer: 1,
+        rationale: "資料において「決算短信...入手先：企業HP or TDnet」として指定されている、適時開示用ネットワークシステムです。"
+    },
+    {
+        q: "貸借対照表（B/S）の資産の部・負債の部において、項目を「流動」または「非流動」に選別する際、ステップ1として最初に適用される、主たる営業取引の循環内にあるかを見る基準を何というか。",
+        options: ["一年基準（ワン・イヤー・ルール）", "営業循環基準", "利益段階表示基準", "割安・割高の判定基準"],
+        answer: 1,
+        rationale: "資料に「ステップ①:資産・負債から流動項目を営業循環基準で選ぶ」と示されている通り、最優先される区分基準です。"
+    },
+    {
+        q: "営業循環基準の対象とならなかった資産・負債について、決算日の翌日から起算して1年以内に現金化または弁済されるかどうかで判断する、ステップ2の区分基準を何というか。",
+        options: ["一年基準", "営業循環基準", "有限責任基準", "見積り判断基準"],
+        answer: 0,
+        rationale: "資料において「ステップ②:資産・負債から流動項目を一年基準で選ぶ」と説明されています。"
+    },
+    {
+        q: "損益計算書（P/L）の営業損益計算区分において、売上高から売上原価を引いて求めた売上総利益から、さらに「販売費及び一般管理費」を差し引いて計算される、本業の成果を示す利益は何か。",
+        options: ["売上総利益", "経常利益", "営業利益", "当期純利益"],
+        answer: 2,
+        rationale: "資料の利益の段階的表示に示されている通り、本業の営業活動から得られた損益の結果を「営業利益」といいます。"
+    },
+    {
+        q: "決算短信などで特徴的に開示され、自社の将来の売上高や利益を見積もったもので、事後的に条件の変化に伴って書き換えられることがある情報を何というか。",
+        options: ["業績予想の開示・修正", "確定決算報告", "非財務情報の開示", "アナリスト予測値"],
+        answer: 0,
+        rationale: "資料において「業績予想の開示・修正：自社の売上高や利益を予想したもの。事後的に修正される」と明記されています。"
+    },
+    {
+        q: "株式市場の機能面における分類のうち、既に発行されている既存の株式を、投資家同士が時価で売買・取引する市場を何というか。",
+        options: ["発行市場（プライマリー市場）", "流通市場（セカンダリー市場）", "適時開示市場", "シンジケート市場"],
+        answer: 1,
+        rationale: "資料において「流通市場（セカンダリー市場）：株式上場によって流通市場での売買を可能にする」と定義されています。"
+    },
+    {
+        q: "適時開示情報や財務データを効率的に取得・集計・要約するために活用される、標準化された電子ファイル形式を何というか。",
+        options: ["XBRL", "HTML", "CSV", "Python"],
+        answer: 0,
+        rationale: "資料において、適時開示情報（XBRLファイル）を取得し、情報の抽出や自動処理を行う例が記述されています。"
+    },
+    {
+        q: "長期的な株価変動による利益獲得を目指す投資家が、有価証券報告書等の会計情報を分析し、企業価値評価モデルを用いて評価しようとする「企業本来の価値」を何というか。",
+        options: ["気配値（提示価格）", "本源的価値（内在価値）", "直近の終値", "取得原価"],
+        answer: 1,
+        rationale: "資料において「会計情報から本源的価値（内在価値）を評価し、長期的な株価変化を予測する」と明記されています。"
+    },
+    {
+        q: "株主から資金を預かって企業経営を行う経営者が、その委託された任務を誠実に遂行し、成果や経営状態を適切に説明する義務や責任のことを、会計用語で何というか。",
+        options: ["有限責任", "受託責任", "適時開示義務", "監査意見"],
+        answer: 1,
+        rationale: "資料において「会計情報を用いて、経営者の受託責任の遂行状況を評価する」と示されています。"
+    },
+    {
+        q: "証券会社に所属し、個別企業の財務諸表やビジネスモデルを詳細に分析・評価して、主に一般投資家や株主に向けて投資情報を提供する専門家を何というか。",
+        options: ["セルサイドアナリスト", "バイサイドアナリスト", "クレジットアナリスト", "労働組合"],
+        answer: 0,
+        rationale: "資料において「セルサイドアナリスト: 証券会社に所属し、個別証券を分析し、評価する→株主に対する情報提供」と定義されています。"
+    },
+    {
+        q: "経済的な取引の当事者間において、一方が必要な情報を非常によく知っているのに対し、もう一方はよく知らないという、情報に偏りがある状態を何というか。",
+        options: ["情報の非対称性", "利害対立関係", "モラル・ハザード", "逆選択"],
+        answer: 0,
+        rationale: "資料において「情報の非対称性（取引において必要な情報を一方はよく知っているが、もう一方はよく知らない状態）」と明確に定義されています。"
+    },
+    {
+        q: "融資を実行する前の段階において、情報の非対称性が存在することが原因で、経営状態の良い企業が取引から退出し、結果として「経営状態の悪い企業のみ」が銀行の取引相手に残ってしまう現象を何というか。",
+        options: ["モラル・ハザード", "逆選択（アドバース・セレクション）", "期限の利益の喪失", "恣意的な利益操作"],
+        answer: 1,
+        rationale: "資料において「逆選択（経営状態が良い企業とは逆の経営状態が悪い企業のみが取引相手に残る）」と説明されています。"
+    },
+    {
+        q: "融資が成立した後の段階において、経営者が自己の利己心に従って行動する可能性があり、高いリスクの投資へ資金を向けたり、過度な現金配当を行うなどして、必ずしも銀行の利益を最大化しない現象を何というか。",
+        options: ["逆選択（アドバース・セレクション）", "モラル・ハザード", "分配可能額の計算ミス", "受託責任の完全遂行"],
+        answer: 1,
+        rationale: "資料において「モラル・ハザード（融資後、経営者は自己の利己心に従って行動する可能性があり、必ずしも銀行の利益を最大化しない）」と定義されています。"
+    },
+    {
+        q: "銀行が融資実行後のモラル・ハザードを抑制するために、契約において課す「純資産額を一定以上に維持する」「2期連続で営業損失を出さない」などの義務条項を何というか。",
+        options: ["分配可能額の制限", "財務制限条項（コベナンツ）", "適時開示制度", "一般に公正妥当と認められる企業会計の慣行"],
+        answer: 1,
+        rationale: "資料において、融資後モニタリングの一環として「財務制限条項の設定」およびその具体例が示されています。"
+    },
+    {
+        q: "「本来設定されている返済期限が到来するまでは、資金を返済しなくてもよい」という債務者側の権利のことを何というか。",
+        options: ["期限の利益", "有限責任", "分配可能額", "議決権"],
+        answer: 0,
+        rationale: "資料において「期限の利益（返済期限まで返済しなくてよいという権利）」と定義されており、財務制限条項に違反するとこれを喪失します。"
+    },
+    {
+        q: "財務会計の領域のうち、会社法や金融商品取引法といった「法規制に準拠して、強制力をもって行われる会計」のことを総称して何というか。",
+        options: ["制度会計", "管理会計", "意思決定会計", "ESG情報の開示"],
+        answer: 0,
+        rationale: "資料において「法規制に準拠して行われるもの: 制度会計」と明確に分類されています。"
+    },
+    {
+        q: "主に「会社法」に根ざした制度会計が重視する機能であり、富の流出（配当等）を制限することなどを通じて、経営者・株主・債権者の間に存在する対立関係をコントロールする機能を何というか。",
+        options: ["情報提供機能", "利害調整機能", "業績管理機能", "適時開示制度"],
+        answer: 1,
+        rationale: "資料において「会社法による会計...利害調整機能: 経営者・株主・債権者の間に存在する利害対立関係の調整（例:配当等の制限）」と説明されています。"
+    },
+    {
+        q: "主に「金融商品取引法」に根ざした制度会計が重視する機能であり、有価証券報告書の開示などを通じて、投資者が適切な「証券投資意思決定」を行えるように有益なデータを提供する機能を何というか。",
+        options: ["利害調整機能", "情報提供機能", "利益操作機能", "業績管理機能"],
+        answer: 1,
+        rationale: "資料において「金融商品取引法による会計...情報提供機能: 証券投資意思決定に役立つ情報の提供（例:有価証券報告書の開示）」と整理されています。"
+    }
+];
+
+// クイズHTMLを動的に生成
+function initQuiz() {
+    const container = document.getElementById('quizContainer');
+    quizData.forEach((data, index) => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        card.id = `card_${index}`;
+
+        let optionsHTML = '';
+        data.options.forEach((option, oIndex) => {
+            optionsHTML += `
+                <label class="option-label" id="label_${index}_${oIndex}">
+                    <input type="radio" name="question_${index}" value="${oIndex}">
+                    ${option}
+                </label>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="question-number">第 ${index + 1} 問</div>
+            <div class="question-text">${data.q}</div>
+            <div class="options-container">
+                ${optionsHTML}
+            </div>
+            <div class="feedback" id="feedback_${index}"></div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// 採点と結果の表示
+function checkAnswers() {
+    let score = 0;
+    
+    quizData.forEach((data, index) => {
+        const selected = document.querySelector(`input[name="question_${index}"]:checked`);
+        const feedbackDiv = document.getElementById(`feedback_${index}`);
+        
+        // 全ての選択肢の背景色をクリア
+        data.options.forEach((_, oIndex) => {
+            document.getElementById(`label_${index}_${oIndex}`).className = 'option-label';
+        });
+
+        if (selected) {
+            const userAnswer = parseInt(selected.value);
+            if (userAnswer === data.answer) {
+                score++;
+                feedbackDiv.className = 'feedback correct';
+                feedbackDiv.innerHTML = `<div class="rationale-title">正解！</div>${data.rationale}`;
+                document.getElementById(`label_${index}_${userAnswer}`).classList.add('correct-choice');
+            } else {
+                feedbackDiv.className = 'feedback incorrect';
+                feedbackDiv.innerHTML = `<div class="rationale-title">不正解</div>【正解：${data.options[data.answer]}】<br>${data.rationale}`;
+                document.getElementById(`label_${index}_${userAnswer}`).classList.add('incorrect-choice');
+                document.getElementById(`label_${index}_${data.answer}`).classList.add('correct-choice');
+            }
+        } else {
+            feedbackDiv.className = 'feedback incorrect';
+            feedbackDiv.innerHTML = `<div class="rationale-title">未選択</div>【正解：${data.options[data.answer]}】<br>${data.rationale}`;
+            document.getElementById(`label_${index}_${data.answer}`).classList.add('correct-choice');
+        }
+    });
+
+    const resultPanel = document.getElementById('resultPanel');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const commentDisplay = document.getElementById('commentDisplay');
+    
+    scoreDisplay.innerText = `結果：30問中 ${score} 問 正解 （正答率: ${Math.round((score/30)*100)}%）`;
+    
+    if (score === 30) {
+        commentDisplay.innerText = "素晴らしい！全問正解です。講義内容が完全に定着しています。";
+    } else if (score >= 24) {
+        commentDisplay.innerText = "合格点クリアです。間違えた部分の資料を再確認しておきましょう。";
+    } else {
+        commentDisplay.innerText = "もう一度講義資料（第1回、第4回〜第7回）を読み直して復習してみましょう。";
+    }
+    
+    resultPanel.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.onload = initQuiz;
+</script>
+
+</body>
+</html>
